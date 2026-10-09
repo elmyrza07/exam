@@ -1,0 +1,39 @@
+{% extends 'posts/base.html' %}
+
+{% block title %}Список задач{% endblock %}
+
+{% block content %}
+<form method="get" action="{% url 'post_list' %}" style="display: flex; gap: 10px; margin-bottom: 20px;">
+    <input type="text" name="search" placeholder="Поиск по описанию..." value="{{ request.GET.search|default:'' }}">
+    <button type="submit" class="btn btn-secondary">Найти</button>
+    {% if request.GET.search %}
+        <a href="{% url 'post_list' %}" class="btn btn-secondary" style="background: #ef4444;">Сбросить</a>
+    {% endif %}
+</form>
+
+<div style="display: flex; flex-direction: column; gap: 12px;">
+    {% for post in posts %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; background: {% if post.is_completed %}#f9fafb{% else %}#fff{% endif %};">
+            <div>
+                <h3 style="font-size: 18px; margin-bottom: 5px;">
+                    {% if post.is_completed %}
+                        <s style="color: #9ca3af;">{{ post.title }}</s>
+                    {% else %}
+                        <a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a>
+                    {% endif %}
+                </h3>
+                <small style="color: #6b7280;">Добавлено: {{ post.created_at|date:"d.m.Y H:i" }}</small>
+            </div>
+
+            <form action="{% url 'toggle_complete' pk=post.pk %}" method="post" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm {% if post.is_completed %}btn-secondary{% endif %}" style="{% if not post.is_completed %}background: #10b981;{% endif %}">
+                    {% if post.is_completed %}Возобновить{% else %}✓ Выполнить{% endif %}
+                </button>
+            </form>
+        </div>
+    {% empty %}
+        <p style="text-align: center; color: #6b7280; padding: 20px 0;">Задач пока нет.</p>
+    {% endfor %}
+</div>
+{% endblock %}

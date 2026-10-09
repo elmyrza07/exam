@@ -1,0 +1,37 @@
+{% extends 'posts/base.html' %}
+
+{% block title %}Список задач{% endblock %}
+
+{% block content %}
+<div style="padding: 10px 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h1 style="font-size: 24px;">{{ post.title }}</h1>
+        <span style="padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background: {% if post.is_completed %}#d1fae5; color: #065f46;{% else %}#fef3c7; color: #92400e;{% endif %}">
+            {% if post.is_completed %}Выполнено{% else %}В процессе{% endif %}
+        </span>
+    </div>
+
+    <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
+        Дата создания: {{ post.created_at|date:"d M Y, H:i" }}
+    </p>
+
+    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 20px; line-height: 1.6;">
+        {% if post.description %}
+            {{ post.description|linebreaks }}
+        {% else %}
+            <em style="color: #9ca3af;">Описание отсутствует.</em>
+        {% endif %}
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+        <a href="{% url 'post_list' %}" class="btn btn-secondary">← Назад к списку</a>
+
+        <form action="{% url 'toggle_complete' pk=post.pk %}" method="post" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="btn" style="background: {% if post.is_completed %}#6b7280{% else %}#10b981{% endif %};">
+                {% if post.is_completed %}Отметить невыполненной{% else %}Отметить как выполненную{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
