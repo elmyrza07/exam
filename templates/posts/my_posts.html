@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои объявления</title>
+</head>
+<body>
+
+    <a href="{% url 'post_list' %}">← На главную</a>
+
+    <h2>Мои объявления</h2>
+
+    {% for post in page_obj %}
+        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+            <h3><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h3>
+            <p><strong>Цена:</strong> {{ post.price }} сом</p>
+            <p><strong>Категория:</strong> {{ post.category.title|default:"Без категории" }}</p>
+            <a href="{% url 'post_edit' post.pk %}">Редактировать</a> | 
+            <a href="{% url 'post_delete' post.pk %}">Удалить</a>
+        </div>
+    {% empty %}
+        <p>У вас пока нет созданных объявлений.</p>
+    {% endfor %}
+
+    <!-- Пагинация для моих постов -->
+    <div>
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Назад</a>
+        {% endif %}
+
+        <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Вперед</a>
+        {% endif %}
+    </div>
+
+</body>
+</html>

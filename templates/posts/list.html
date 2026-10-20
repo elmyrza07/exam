@@ -1,64 +1,70 @@
-{% extends 'posts/base.html' %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список объявлений</title>
+</head>
+<body>
 
-{% block title %}Список постов{% endblock %}
+    <!-- Навигация -->
+    <nav>
+        {% if user.is_authenticated %}
+            <span>Привет, {{ user.username }}!</span> |
+            <a href="{% url 'post_create' %}">Создать объявление</a> |
+            <a href="{% url 'my_posts' %}">Мои объявления</a> |
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Выйти</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">Войти</a>
+        {% endif %}
+    </nav>
 
-{% block content %}
-<!-- Кнопки фильтрации по статусу активности (сохраняют текущий поиск) -->
-<div style="margin-bottom: 15px; display: flex; gap: 8px;">
-    <a href="{% url 'post_list' %}{% if request.GET.search %}?search={{ request.GET.search }}{% endif %}" 
-       class="btn {% if not request.GET.is_active %}btn-primary{% else %}btn-secondary{% endif %}">
-        Все
-    </a>
-    
-    <a href="{% url 'post_list' %}?is_active=true{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
-       class="btn {% if request.GET.is_active == 'true' %}btn-primary{% else %}btn-secondary{% endif %}">
-        Только активные
-    </a>
-    
-    <a href="{% url 'post_list' %}?is_active=false{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
-       class="btn {% if request.GET.is_active == 'false' %}btn-primary{% else %}btn-secondary{% endif %}">
-        Неактивные
-    </a>
-</div>
+    <hr>
 
-<!-- Форма поиска (сохраняет фильтр is_active) -->
-<form method="get" action="{% url 'post_list' %}" style="display: flex; gap: 10px; margin-bottom: 20px;">
-    {% if request.GET.is_active %}
-        <input type="hidden" name="is_active" value="{{ request.GET.is_active }}">
-    {% endif %}
-    
-    <input type="text" 
-           name="search" 
-           placeholder="Поиск по названию или описанию..." 
-           value="{{ request.GET.search|default:'' }}" 
-           style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
-           
-    <button type="submit" class="btn">Найти</button>
-    
-    {% if request.GET.search or request.GET.is_active %}
-        <a href="{% url 'post_list' %}" class="btn btn-secondary">Сбросить всё</a>
-    {% endif %}
-</form>
+    <!-- Поиск и фильтр по категориям -->
+    <form method="get" action="">
+        <input type="text" name="search" value="{{ query }}" placeholder="Поиск по названию или описанию...">
+        
+        <select name="category">
+            <option value="">Все категории</option>
+            {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if selected_category|add:"0" == cat.id %}selected{% endif %}>
+                    {{ cat.title }}
+                </option>
+            {% endfor %}
+        </select>
+        
+        <button type="submit">Найти</button>
+    </form>
 
-<!-- Список постов -->
-<div style="display: flex; flex-direction: column; gap: 15px;">
-    {% for post in posts %}
-        <div style="padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; background: {% if not post.is_active %}#f3f4f6{% else %}#fff{% endif %};">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h3>
-                <span>{% if post.is_active %}🟢 Активен{% else %}🔴 Неактивен{% endif %}</span>
-            </div>
-            
-            <p style="margin-top: 8px; color: #4b5563;">{{ post.description }}</p>
-            
-            {% if post.rate is not None %}
-                <div style="margin-top: 10px;">
-                    <span class="rate-badge">★ Рейтинг: {{ post.rate }}</span>
-                </div>
-            {% endif %}
+    <hr>
+
+    <!-- Список постов -->
+    <h2>Объявления</h2>
+    {% for post in page_obj %}
+        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+            <h3><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h3>
+            <p><strong>Цена:</strong> {{ post.price }} сом</p>
+            <p><strong>Категория:</strong> {{ post.category.title|default:"Без категории" }}</p>
         </div>
     {% empty %}
-        <p style="text-align: center; color: #6b7280; padding: 20px 0;">Посты не найдены.</p>
+        <p>Объявлений не найдено.</p>
     {% endfor %}
-</div>
-{% endblock %}
+
+    <!-- Пагинация (сохраняет параметры поиска при переходе по страницам) -->
+    <div>
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&search={{ query }}&category={{ selected_category }}">Назад</a>
+        {% endif %}
+
+        <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ query }}&category={{ selected_category }}">Вперед</a>
+        {% endif %}
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Форма объявления</title>
+</head>
+<body>
+
+    <a href="{% url 'post_list' %}">← На главную</a>
+
+    <h2>Сохранение объявления</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Сохранить</button>
+    </form>
+
+</body>
+</html>

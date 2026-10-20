@@ -1,20 +1,26 @@
-{% extends 'posts/base.html' %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ post.title }}</title>
+</head>
+<body>
 
-{% block title %}{{ post.title }}{% endblock %}
+    <a href="{% url 'post_list' %}">← На главную</a>
 
-{% block content %}
-<div style="padding: 10px 0;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h1 style="font-size: 24px;">{{ post.title }}</h1>
-        {% if post.rate is not None %}
-            <span class="rate-badge" style="font-size: 14px; padding: 4px 10px;">★ Рейтинг: {{ post.rate }}</span>
-        {% endif %}
-    </div>
+    <h2>{{ post.title }}</h2>
+    <p><strong>Цена:</strong> {{ post.price }} сом</p>
+    <p><strong>Категория:</strong> {{ post.category.title|default:"Без категории" }}</p>
+    <p><strong>Описание:</strong> {{ post.description }}</p>
+    <p><strong>Автор:</strong> {{ post.author.username }}</p>
+    <p><small>Дата публикации: {{ post.created_at|date:"d.m.Y H:i" }}</small></p>
 
-    <div style="background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 20px; line-height: 1.6;">
-        <p style="font-size: 16px; color: #374151;">{{ post.description }}</p>
-    </div>
+    <!-- Кнопки редактирования и удаления доступны ТОЛЬКО автору -->
+    {% if user == post.author %}
+        <hr>
+        <a href="{% url 'post_edit' post.pk %}">Редактировать</a> | 
+        <a href="{% url 'post_delete' post.pk %}">Удалить</a>
+    {% endif %}
 
-    <a href="{% url 'post_list' %}" class="btn btn-secondary">← Назад к списку</a>
-</div>
-{% endblock %}
+</body>
+</html>
